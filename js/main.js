@@ -27,8 +27,52 @@ document.addEventListener('DOMContentLoaded', () => {
     initLeakTool();
     initCVETool();
     initShodanTool();
+    initGoogleDorkingTool();
     initSettings();
 });
+
+/**
+ * Initialize Google Dorking Tool (GHDB)
+ */
+function initGoogleDorkingTool() {
+    const input = document.getElementById('dork-domain-input');
+    const btnSearch = document.getElementById('btn-custom-dork');
+    const viewPanel = document.getElementById('google-dorking');
+
+    if (!input || !btnSearch || !viewPanel) return;
+
+    // Custom Search Button
+    btnSearch.addEventListener('click', () => {
+        const domain = input.value.trim();
+        if (!domain) return UI.showToast('Please enter a target domain first.', 'warning');
+
+        const url = `https://www.google.com/search?q=site:${encodeURIComponent(domain)}`;
+        window.open(url, '_blank');
+        UI.showToast('Opened basic site search in Google', 'info');
+        State.addQuery(domain, 'Google Dork: Basic', 'Complete');
+    });
+
+    // Handle Curated Dork Chips within this panel specifically
+    const dorkChips = viewPanel.querySelectorAll('.dork-chip');
+    dorkChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            const domain = input.value.trim();
+            const dorkValue = chip.getAttribute('data-dork');
+
+            // If user hasn't put a domain, just open the raw dork without site:
+            let query = dorkValue;
+            if (domain) {
+                query = `site:${domain} ${dorkValue}`;
+            } else {
+                UI.showToast('No domain specified. Running raw dork globally...', 'info');
+            }
+
+            const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+            window.open(url, '_blank');
+            State.addQuery(domain || 'Global', `Google Dork: ${dorkValue.substring(0, 15)}...`, 'Complete');
+        });
+    });
+}
 
 /**
  * Initialize IP Intelligence Tool
