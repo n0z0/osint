@@ -178,27 +178,48 @@ export const getLeakInfo = async (target, hibpApiKey = null) => {
  */
 export const getCVEInfo = async (cveId) => {
     try {
-        // cve.circl.lu is a public reliable alternative to direct NVD which often limits without keys
-        // Since their server sends a conflicting CORS header sometimes, we route through a proxy
-        const targetUrl = encodeURIComponent(`https://cve.circl.lu/api/cve/CVE-${cveId}`);
-        const proxyData = await fetchWithTimeout(`https://api.allorigins.win/get?url=${targetUrl}`);
+        // We use the official MITRE CVE Services API natively (supports CORS, no proxy needed)
+        const targetUrl = `https://cveawg.mitre.org/api/cve/CVE-${cveId}`;
+        const response = await fetchWithTimeout(targetUrl, { timeout: 10000 });
 
-        const response = proxyData.contents ? JSON.parse(proxyData.contents) : null;
-
-        // Circl returns null if not found
-        if (!response) {
-            throw new Error(`CVE-${cveId} not found in database.`);
+        // Mitre returns an error structure if not found
+        if (!response || !response.cveMetadata) {
+            throw new Error(`CVE-${cveId} not found or structure invalid.`);
         }
+
+        const metadata = response.cveMetadata || {};
+        const cna = (response.containers && response.containers.cna) ? response.containers.cna : {};
+
+        let cvssScore = "N/A";
+        // Grab CVSS from metrics if available
+        if (cna.metrics && cna.metrics.length > 0) {
+            const metric = cna.metrics[0];
+            const cvssData = metric.cvssV3_1 || metric.cvssV3_0 || metric.cvssV4_0 || metric.cvssV2_0;
+            if (cvssData) {
+                cvssScore = cvssData.baseScore || cvssData.score || "N/A";
+            }
+        }
+
+        const severity = (cvssScore === "N/A") ? 'UNKNOWN' :
+            (cvssScore >= 9.0) ? 'CRITICAL' :
+                (cvssScore >= 7.0) ? 'HIGH' :
+                    (cvssScore >= 4.0) ? 'MEDIUM' : 'LOW';
+
+        const summaryStr = (cna.descriptions && cna.descriptions.length > 0) ?
+            cna.descriptions[0].value : 'No description available';
+
+        const referencesStr = (cna.references && cna.references.length > 0) ?
+            cna.references.map(ref => ref.url).slice(0, 3).join(', ') : 'None';
 
         // We trim the massive response for UI friendliness
         return {
-            id: response.id,
-            cvss: response.cvss,
-            severity: (response.cvss >= 9.0) ? 'CRITICAL' : (response.cvss >= 7.0) ? 'HIGH' : (response.cvss >= 4.0) ? 'MEDIUM' : 'LOW',
-            summary: response.summary,
-            published: response.Published,
-            modified: response.Modified,
-            references: (response.references || []).slice(0, 5).join(', ') // Just show 5
+            id: metadata.cveId || `CVE-${cveId}`,
+            cvss: cvssScore,
+            severity: severity,
+            summary: summaryStr,
+            published: metadata.datePublished || 'Unknown',
+            modified: metadata.dateUpdated || 'Unknown',
+            references: referencesStr
         };
 
     } catch (error) {
