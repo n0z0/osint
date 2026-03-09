@@ -350,11 +350,77 @@ function initCVETool() {
         try {
             const data = await API.getCVEInfo(cveId);
             UI.renderDataGrid('cve-results', data);
-            UI.showToast(`CVE-${cveId} resolved.`, 'success');
+
+            // Fetch the cleaned CVE ID from the results
+            const cleanCveId = data.id || `CVE-${cveId}`;
+
+            // Append Target Dorking Buttons dynamically below the grid
+            const resultsContainer = document.getElementById('cve-results');
+            if (resultsContainer) {
+                const dorkSection = document.createElement('div');
+                dorkSection.className = 'mt-4 pt-4';
+                dorkSection.style.borderTop = '1px solid var(--border-color)';
+
+                const dorkTitle = document.createElement('div');
+                dorkTitle.style.cssText = 'font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 1rem;';
+                dorkTitle.textContent = 'Find Vulnerable Targets (Dork Pivoting)';
+                dorkSection.appendChild(dorkTitle);
+
+                const btnGroup = document.createElement('div');
+                btnGroup.style.display = 'flex';
+                btnGroup.style.gap = '0.5rem';
+                btnGroup.style.flexWrap = 'wrap';
+
+                // Shodan Vulnerability Dork
+                const btnShodan = document.createElement('span');
+                btnShodan.className = 'dork-chip';
+                btnShodan.innerHTML = '🔍 Shodan';
+                btnShodan.title = 'Search Shodan for hosts vulnerable to ' + cleanCveId;
+                btnShodan.onclick = () => window.open(`https://www.shodan.io/search?query=vuln:%22${cleanCveId}%22`, '_blank');
+                btnGroup.appendChild(btnShodan);
+
+                // Censys Vulnerability Dork
+                const btnCensys = document.createElement('span');
+                btnCensys.className = 'dork-chip';
+                btnCensys.innerHTML = '🌐 Censys';
+                btnCensys.title = 'Search Censys for hosts vulnerable to ' + cleanCveId;
+                btnCensys.onclick = () => window.open(`https://search.censys.io/search?resource=hosts&q=services.software.vulnerabilities.cve_id%3A%22${cleanCveId}%22`, '_blank');
+                btnGroup.appendChild(btnCensys);
+
+                // FOFA Vulnerability Dork
+                const btnFofa = document.createElement('span');
+                btnFofa.className = 'dork-chip';
+                btnFofa.innerHTML = '🌍 FOFA';
+                btnFofa.title = 'Search FOFA for hosts vulnerable to ' + cleanCveId;
+                const fofaQuery = btoa(`cve="${cleanCveId}"`); // Base64 encoding required by FOFA
+                btnFofa.onclick = () => window.open(`https://en.fofa.info/result?qbase64=${fofaQuery}`, '_blank');
+                btnGroup.appendChild(btnFofa);
+
+                // GitHub PoC Dork
+                const btnGithub = document.createElement('span');
+                btnGithub.className = 'dork-chip';
+                btnGithub.innerHTML = '🧑‍💻 GitHub PoC';
+                btnGithub.title = 'Search GitHub for Proof of Concepts for ' + cleanCveId;
+                btnGithub.onclick = () => window.open(`https://github.com/search?q=${cleanCveId}+poc&type=repositories`, '_blank');
+                btnGroup.appendChild(btnGithub);
+
+                // Google Dork for Exploits
+                const btnGoogle = document.createElement('span');
+                btnGoogle.className = 'dork-chip';
+                btnGoogle.innerHTML = '🎯 Google Dork';
+                btnGoogle.title = 'Search Google for txt/py/rb exploits for ' + cleanCveId;
+                btnGoogle.onclick = () => window.open(`https://www.google.com/search?q=ext:txt+OR+ext:py+OR+ext:rb+%22${cleanCveId}%22+exploit`, '_blank');
+                btnGroup.appendChild(btnGoogle);
+
+                dorkSection.appendChild(btnGroup);
+                resultsContainer.appendChild(dorkSection);
+            }
+
+            UI.showToast(`${cleanCveId} resolved.`, 'success');
 
             // Mark as threat if CVSS is High or Critical
             const isCritical = data.cvss >= 7.0;
-            State.addQuery(`CVE-${cveId}`, 'Vulnerability Lookup', 'Complete', isCritical);
+            State.addQuery(`${cleanCveId}`, 'Vulnerability Lookup', 'Complete', isCritical);
 
         } catch (error) {
             UI.showToast(`Lookup failed: ${error.message}`, 'error');
