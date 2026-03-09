@@ -160,3 +160,36 @@ export const getCVEInfo = async (cveId) => {
         throw new Error(`Failed to lookup CVE-${cveId}: ` + error.message);
     }
 }
+
+/**
+ * Shodan API Search (Route B - Requires API Key)
+ */
+export const getShodanHost = async (ip, apiKey) => {
+    try {
+        if (!apiKey) throw new Error("API Key is missing. Please configure it in Settings.");
+
+        // We use a CORS Proxy (like allorigins or corsproxy.io) because Shodan API blocks browser origin requests
+        const shodanUrl = encodeURIComponent(`https://api.shodan.io/shodan/host/${ip}?key=${apiKey}`);
+        const response = await fetchWithTimeout(`https://api.allorigins.win/get?url=${shodanUrl}`);
+
+        const data = JSON.parse(response.contents);
+
+        if (data.error) {
+            throw new Error(data.error);
+        }
+
+        // Simplify payload for UI
+        return {
+            ip: data.ip_str,
+            organization: data.org,
+            os: data.os || 'Unknown',
+            ports: data.ports ? data.ports.join(', ') : 'None detected',
+            vulns: data.vulns ? data.vulns.join(', ') : 'None verified',
+            last_update: data.last_update
+        };
+
+    } catch (error) {
+        console.error("Shodan API Error:", error);
+        throw new Error("Shodan API Failed: " + error.message);
+    }
+}

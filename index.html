@@ -65,6 +65,12 @@
                             <span>Breach / Leaks</span>
                         </a>
                     </li>
+                    <li class="nav-item" data-tab="shodan-intel">
+                        <a href="#" class="nav-link">
+                            <i class="ph ph-globe-hemisphere-east"></i>
+                            <span>Shodan Intel</span>
+                        </a>
+                    </li>
                     <li class="nav-item" data-tab="cve-lookup">
                         <a href="#" class="nav-link">
                             <i class="ph ph-bug"></i>
@@ -96,6 +102,9 @@
                     <button class="action-btn" title="API Status">
                         <i class="ph ph-activity"></i>
                         <span class="status-dot online"></span>
+                    </button>
+                    <button class="action-btn" id="btn-settings" title="Settings / API Keys">
+                        <i class="ph ph-gear"></i>
                     </button>
                     <button class="action-btn" title="Export Results">
                         <i class="ph ph-download-simple"></i>
@@ -289,6 +298,43 @@
                     </div>
                 </section>
 
+                <!-- Shodan Intel View -->
+                <section id="shodan-intel" class="view-panel">
+                    <div class="view-header">
+                        <div>
+                            <h1 class="view-title">Shodan Intelligence</h1>
+                            <p class="view-subtitle">Search for exposed devices, open ports, and vulnerabilities using
+                                Shodan Dorks or API.</p>
+                        </div>
+                    </div>
+                    <div class="tool-container glass-panel">
+                        <div class="alert alert-info mb-4"
+                            style="background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent-secondary); padding: 1rem; border-radius: var(--radius-md); font-size: 0.875rem;">
+                            <i class="ph ph-info"
+                                style="color: var(--accent-secondary); margin-right: 0.5rem; vertical-align: middle;"></i>
+                            <strong>Route A (Free):</strong> Click "Generate Dorks" to open specialized Shodan search
+                            queries in a new tab.<br>
+                            <strong>Route B (API):</strong> Configure your Shodan API Key in <a href="#"
+                                id="link-shodan-settings"
+                                style="text-decoration: underline; color: var(--accent-primary);">Settings</a> to fetch
+                            direct live data here.
+                        </div>
+                        <div class="search-bar-large">
+                            <input type="text" id="shodan-input"
+                                placeholder="Target IP or Domain (e.g. 8.8.8.8, apache)" class="font-mono">
+                            <button id="btn-shodan-dork" class="btn-primary"
+                                style="background: var(--bg-surface-hover); border: 1px solid var(--border-color); color: var(--text-main);">
+                                <i class="ph ph-magnifying-glass-plus"></i> Gen Dorks
+                            </button>
+                            <button id="btn-analyze-shodan" class="btn-primary">
+                                <i class="ph ph-rocket-launch"></i> API Scan
+                            </button>
+                        </div>
+                        <div id="shodan-results" class="results-area hidden mt-4">
+                        </div>
+                    </div>
+                </section>
+
                 <!-- CVE Lookup View -->
                 <section id="cve-lookup" class="view-panel">
                     <div class="view-header">
@@ -319,6 +365,34 @@
 
             </div>
         </main>
+    </div>
+
+    <!-- Modals Overlay -->
+    <div id="settings-modal" class="modal-overlay hidden"
+        style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; display: flex; align-items: center; justify-content: center;">
+        <div class="glass-panel" style="width: 400px; padding: 2rem;">
+            <h2 class="panel-title" style="margin-bottom: 0.5rem;">Configuration</h2>
+            <p class="text-muted text-sm mb-4">Set your personal API keys for advanced modules. Keys are stored locally
+                in your browser.</p>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label
+                    style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">Shodan
+                    API Key</label>
+                <input type="password" id="input-shodan-key" placeholder="Enter your 32-character key..."
+                    class="font-mono"
+                    style="width: 100%; background: var(--bg-base); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.75rem; color: var(--text-main); outline: none;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;"><a
+                        href="https://account.shodan.io/" target="_blank" style="color: var(--accent-primary);">Get a
+                        free key here</a></div>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 1rem;">
+                <button id="btn-close-settings"
+                    style="padding: 0.5rem 1rem; color: var(--text-muted); font-weight: 500;">Cancel</button>
+                <button id="btn-save-settings" class="btn-primary" style="padding: 0.5rem 1.5rem;">Save Keys</button>
+            </div>
+        </div>
     </div>
 
     <!-- Toast Notification Container -->

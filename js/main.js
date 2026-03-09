@@ -26,6 +26,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initUsernameTool();
     initLeakTool();
     initCVETool();
+    initShodanTool();
+    initSettings();
 });
 
 /**
@@ -281,4 +283,114 @@ function initCVETool() {
     input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') performAnalysis();
     });
+}
+
+/**
+ * Initialize Shodan Intelligence Tool
+ */
+function initShodanTool() {
+    const btnDork = document.getElementById('btn-shodan-dork');
+    const btnScan = document.getElementById('btn-analyze-shodan');
+    const input = document.getElementById('shodan-input');
+
+    if (!btnDork || !btnScan || !input) return;
+
+    // Route A: Dork Generator
+    btnDork.addEventListener('click', () => {
+        const target = input.value.trim();
+        if (!target) {
+            UI.showToast('Please enter a target IP, domain, or keyword.', 'error');
+            return;
+        }
+
+        // Determine if it's an IP/hostname or a keyword
+        const isIP = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(target);
+        let dork = isIP ? `host:${target}` : `hostname:"${target}"`;
+
+        const url = `https://www.shodan.io/search?query=${encodeURIComponent(dork)}`;
+        window.open(url, '_blank');
+        UI.showToast('Shodan opened in new tab.', 'info');
+        State.addQuery(target, 'Shodan Dork', 'Complete');
+    });
+
+    // Route B: API Scan
+    const performAnalysis = async () => {
+        const ip = input.value.trim();
+        if (!ip) {
+            UI.showToast('Please enter a target IP address for API scan.', 'error');
+            return;
+        }
+
+        const apiKey = localStorage.getItem('shodan_api_key');
+        if (!apiKey) {
+            UI.showToast('Missing Shodan API Key. Check Settings.', 'error');
+            document.getElementById('settings-modal').classList.remove('hidden');
+            return;
+        }
+
+        UI.setLoadingState('btn-analyze-shodan', true);
+        UI.clearContainer('shodan-results');
+
+        try {
+            const data = await API.getShodanHost(ip, apiKey);
+            UI.renderDataGrid('shodan-results', data);
+            UI.showToast(`Shodan data retrieved for ${ip}.`, 'success');
+
+            // Mark as threat if vulns exist
+            const isThreat = data.vulns !== 'None verified';
+            State.addQuery(ip, 'Shodan API Scan', 'Complete', isThreat);
+
+        } catch (error) {
+            UI.showToast(`Shodan Scan failed: ${error.message}`, 'error');
+            State.addQuery(ip, 'Shodan API Scan', 'Failed');
+        } finally {
+            UI.setLoadingState('btn-analyze-shodan', false);
+        }
+    };
+
+    btnScan.addEventListener('click', performAnalysis);
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') performAnalysis(); // Default enter to API scan
+    });
+}
+
+/**
+ * Initialize Settings Modal
+ */
+function initSettings() {
+    const btnOpen = document.getElementById('btn-settings');
+    const linkOpen = document.getElementById('link-shodan-settings');
+    const btnClose = document.getElementById('btn-close-settings');
+    const btnSave = document.getElementById('btn-save-settings');
+    const modal = document.getElementById('settings-modal');
+    const inputShodan = document.getElementById('input-shodan-key');
+
+    const openModal = (e) => {
+        if (e) e.preventDefault();
+        inputShodan.value = localStorage.getItem('shodan_api_key') || '';
+        modal.classList.remove('hidden');
+    };
+
+    if (btnOpen) btnOpen.addEventListener('click', openModal);
+    if (linkOpen) linkOpen.addEventListener('click', openModal);
+
+    if (btnClose) {
+        btnClose.addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
+    }
+
+    if (btnSave) {
+        btnSave.addEventListener('click', () => {
+            const key = inputShodan.value.trim();
+            if (key) {
+                localStorage.setItem('shodan_api_key', key);
+                UI.showToast('Settings saved successfully.', 'success');
+            } else {
+                localStorage.removeItem('shodan_api_key');
+                UI.showToast('Settings cleared.', 'info');
+            }
+            modal.classList.add('hidden');
+        });
+    }
 }
