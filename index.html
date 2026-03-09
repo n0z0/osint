@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>N0z0 | Advanced OSINT Dashboard</title>
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <!-- Phosphor Icons (Modern & Clean) -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body class="dark-theme">
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <i class="ph ph-radar logo-icon"></i>
+                    <span class="logo-text">N0z0</span>
+                </div>
+            </div>
+
+            <nav class="sidebar-nav">
+                <ul class="nav-list">
+                    <li class="nav-item active" data-tab="dashboard">
+                        <a href="#" class="nav-link">
+                            <i class="ph ph-squares-four"></i>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-tab="ip-tools">
+                        <a href="#" class="nav-link">
+                            <i class="ph ph-globe-hemisphere-west"></i>
+                            <span>IP & Network</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-tab="domain-intel">
+                        <a href="#" class="nav-link">
+                            <i class="ph ph-browser"></i>
+                            <span>Domain Intel</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-tab="advanced-recon">
+                        <a href="#" class="nav-link">
+                            <i class="ph ph-shield-warning"></i>
+                            <span>Advanced Recon</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-tab="username-lookup">
+                        <a href="#" class="nav-link">
+                            <i class="ph ph-user-focus"></i>
+                            <span>Identity Profiling</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="theme-toggle" id="theme-toggle">
+                    <i class="ph ph-sun light-icon"></i>
+                    <i class="ph ph-moon dark-icon"></i>
+                    <span>Toggle Theme</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <header class="top-header">
+                <div class="header-search">
+                    <i class="ph ph-magnifying-glass"></i>
+                    <input type="text" placeholder="Quick search (IP, Domain, Username, Hash)..." id="global-search">
+                    <div class="shortcut-hint">Ctrl+K</div>
+                </div>
+
+                <div class="header-actions">
+                    <button class="action-btn" title="API Status">
+                        <i class="ph ph-activity"></i>
+                        <span class="status-dot online"></span>
+                    </button>
+                    <button class="action-btn" title="Export Results">
+                        <i class="ph ph-download-simple"></i>
+                    </button>
+                    <div class="user-profile">
+                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=N0z0Admin&backgroundColor=1e293b"
+                            alt="User Avatar" class="avatar">
+                    </div>
+                </div>
+            </header>
+
+            <div class="content-area">
+                <!-- Dashboard View -->
+                <section id="dashboard" class="view-panel active">
+                    <div class="view-header">
+                        <div>
+                            <h1 class="view-title">Command Center</h1>
+                            <p class="view-subtitle">Real-time overview of active investigations and system status.</p>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-grid">
+                        <div class="stat-card glass-panel">
+                            <div class="stat-icon"><i class="ph ph-magnifying-glass"></i></div>
+                            <div class="stat-details">
+                                <h3>Total Queries</h3>
+                                <div class="stat-value" id="stat-queries">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card glass-panel">
+                            <div class="stat-icon"><i class="ph ph-warning-circle"></i></div>
+                            <div class="stat-details">
+                                <h3>Threats Detected</h3>
+                                <div class="stat-value danger" id="stat-threats">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card glass-panel">
+                            <div class="stat-icon"><i class="ph ph-database"></i></div>
+                            <div class="stat-details">
+                                <h3>Data Sources</h3>
+                                <div class="stat-value">8 <span class="text-sm">Active</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recent-activity glass-panel mt-4">
+                        <h2 class="panel-title">Recent Investigations</h2>
+                        <div class="table-responsive">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Target</th>
+                                        <th>Type</th>
+                                        <th>Status</th>
+                                        <th>Timestamp</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-investigations-body">
+                                    <!-- Injected via state.js & ui.js -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- IP Tools View (Skeleton) -->
+                <section id="ip-tools" class="view-panel">
+                    <div class="view-header">
+                        <div>
+                            <h1 class="view-title">IP & Network Intelligence</h1>
+                            <p class="view-subtitle">Analyze IPv4/IPv6 addresses, geolocation, and network routing.</p>
+                        </div>
+                    </div>
+
+                    <div class="tool-container glass-panel">
+                        <div class="search-bar-large">
+                            <input type="text" id="ip-input" placeholder="Enter IP Address (e.g., 8.8.8.8)"
+                                class="font-mono">
+                            <button id="btn-analyze-ip" class="btn-primary">
+                                <i class="ph ph-rocket-launch"></i> Analyze
+                            </button>
+                        </div>
+
+                        <div id="ip-results" class="results-area hidden mt-4">
+                            <!-- Results will be injected here via JS -->
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Domain Intel View (Skeleton) -->
+                <section id="domain-intel" class="view-panel">
+                    <div class="view-header">
+                        <div>
+                            <h1 class="view-title">Domain Intelligence</h1>
+                            <p class="view-subtitle">Gather WHOIS data, DNS records, and subdomains.</p>
+                        </div>
+                    </div>
+
+                    <div class="tool-container glass-panel">
+                        <div class="search-bar-large">
+                            <input type="text" id="domain-input" placeholder="Enter Domain (e.g., example.com)"
+                                class="font-mono">
+                            <button id="btn-analyze-domain" class="btn-primary">
+                                <i class="ph ph-rocket-launch"></i> Analyze
+                            </button>
+                        </div>
+
+                        <div id="domain-results" class="results-area hidden mt-4">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Advanced Recon View -->
+                <section id="advanced-recon" class="view-panel">
+                    <div class="view-header">
+                        <div>
+                            <h1 class="view-title">Advanced Recon</h1>
+                            <p class="view-subtitle">Subdomain enumeration and remote port scanning.</p>
+                        </div>
+                    </div>
+
+                    <div class="tool-container glass-panel">
+                        <div class="search-bar-large">
+                            <input type="text" id="recon-input" placeholder="Enter Target Domain/IP..."
+                                class="font-mono">
+                            <button id="btn-analyze-recon" class="btn-primary">
+                                <i class="ph ph-rocket-launch"></i> Scan Target
+                            </button>
+                        </div>
+
+                        <div id="recon-results" class="results-area hidden mt-4">
+                            <div class="data-grid">
+                                <!-- Subdomains -->
+                                <div class="data-item" style="grid-column: span 2;">
+                                    <div class="data-label">Subdomain Enumeration</div>
+                                    <div class="data-value result-raw" id="subdomain-output"
+                                        style="max-height: 250px; overflow-y: auto;">Waiting for scan...</div>
+                                </div>
+                                <!-- Port Scan -->
+                                <div class="data-item" style="grid-column: span 2;">
+                                    <div class="data-label">Remote Port Scan (Nmap)</div>
+                                    <div class="data-value result-raw" id="portscan-output"
+                                        style="max-height: 250px; overflow-y: auto;">Waiting for scan...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Username Lookup View -->
+                <section id="username-lookup" class="view-panel">
+                    <div class="view-header">
+                        <div>
+                            <h1 class="view-title">Identity Profiling</h1>
+                            <p class="view-subtitle">Search username across multiple social media and platforms.</p>
+                        </div>
+                    </div>
+
+                    <div class="tool-container glass-panel">
+                        <div class="search-bar-large">
+                            <div class="input-prefix">@</div>
+                            <input type="text" id="username-input" placeholder="username" class="font-mono">
+                            <button id="btn-analyze-username" class="btn-primary">
+                                <i class="ph ph-rocket-launch"></i> Hunt
+                            </button>
+                        </div>
+
+                        <div id="username-results" class="results-area hidden mt-4">
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <script type="module" src="js/main.js"></script>
+</body>
+
+</html>
