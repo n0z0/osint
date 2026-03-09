@@ -248,21 +248,55 @@ function initUsernameTool() {
 function initLeakTool() {
     const btn = document.getElementById('btn-analyze-leak');
     const input = document.getElementById('leak-input');
+    const viewPanel = document.getElementById('leak-check');
 
-    if (!btn || !input) return;
+    if (!btn || !input || !viewPanel) return;
+
+    // Handle Quick Dorks for Leak Route B
+    const dorkChips = viewPanel.querySelectorAll('.dork-chip');
+    dorkChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            const target = input.value.trim();
+            const dorkValue = chip.getAttribute('data-dork');
+
+            // Strip anything but numbers/plus if it looks like a phone, or just use raw text
+            const sanitizedTarget = target ? target.replace(/[^\+0-9a-zA-Z\.\@\s-]/g, '') : '';
+
+            let query = dorkValue;
+            if (sanitizedTarget) {
+                // Determine logic: some dorks need quote wrap, some don't
+                if (dorkValue.includes('intext:')) {
+                    query = `${dorkValue}"${sanitizedTarget}"`;
+                } else if (dorkValue.includes('site:t.me')) {
+                    // Search for the number without '+'
+                    query = `${dorkValue} "${sanitizedTarget.replace('+', '')}"`;
+                } else {
+                    query = `"${sanitizedTarget}" ${dorkValue}`;
+                }
+            } else {
+                UI.showToast('No target specified. Running raw phone dork globally.', 'info');
+            }
+
+            const url = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+            window.open(url, '_blank');
+            State.addQuery(sanitizedTarget || 'Global Phone', `Breach Dork: ${dorkValue.substring(0, 15)}...`, 'Complete');
+        });
+    });
 
     const performAnalysis = async () => {
         const target = input.value.trim();
         if (!target) {
-            UI.showToast('Please enter an email.', 'error');
+            UI.showToast('Please enter an Email or Phone number.', 'error');
             return;
         }
 
         UI.setLoadingState('btn-analyze-leak', true);
         UI.clearContainer('leak-results');
 
+        const hibpKey = localStorage.getItem('hibp_api_key');
+
         try {
-            const data = await API.getLeakInfo(target);
+            const data = await API.getLeakInfo(target, hibpKey);
             UI.renderDataGrid('leak-results', data);
 
             if (data.status === "Safe") {
@@ -274,7 +308,14 @@ function initLeakTool() {
             }
 
         } catch (error) {
-            UI.showToast(`Check failed: ${error.message}`, 'error');
+            // Handle specific UI redirects
+            if (error.message.includes('A paid HIBP API Key is required')) {
+                UI.showToast(error.message, 'warning');
+                const modal = document.getElementById('settings-modal');
+                if (modal) modal.classList.remove('hidden');
+            } else {
+                UI.showToast(`Check failed: ${error.message}`, 'error');
+            }
             State.addQuery(target, 'Leak Check', 'Failed');
         } finally {
             UI.setLoadingState('btn-analyze-leak', false);
@@ -450,20 +491,29 @@ function initShodanTool() {
  */
 function initSettings() {
     const btnOpen = document.getElementById('btn-settings');
-    const linkOpen = document.getElementById('link-shodan-settings');
+    const linkShodanOpen = document.getElementById('link-shodan-settings');
+    const viewPanelLeak = document.getElementById('leak-check');
     const btnClose = document.getElementById('btn-close-settings');
     const btnSave = document.getElementById('btn-save-settings');
     const modal = document.getElementById('settings-modal');
     const inputShodan = document.getElementById('input-shodan-key');
+    const inputHibp = document.getElementById('input-hibp-key');
 
     const openModal = (e) => {
         if (e) e.preventDefault();
         inputShodan.value = localStorage.getItem('shodan_api_key') || '';
+        inputHibp.value = localStorage.getItem('hibp_api_key') || '';
         modal.classList.remove('hidden');
     };
 
     if (btnOpen) btnOpen.addEventListener('click', openModal);
-    if (linkOpen) linkOpen.addEventListener('click', openModal);
+    if (linkShodanOpen) linkShodanOpen.addEventListener('click', openModal);
+
+    // Bind HIBP settings links inside Leak module
+    if (viewPanelLeak) {
+        const linkHibpOpen = viewPanelLeak.querySelector('.link-hibp-settings');
+        if (linkHibpOpen) linkHibpOpen.addEventListener('click', openModal);
+    }
 
     if (btnClose) {
         btnClose.addEventListener('click', () => {
@@ -473,14 +523,16 @@ function initSettings() {
 
     if (btnSave) {
         btnSave.addEventListener('click', () => {
-            const key = inputShodan.value.trim();
-            if (key) {
-                localStorage.setItem('shodan_api_key', key);
-                UI.showToast('Settings saved successfully.', 'success');
-            } else {
-                localStorage.removeItem('shodan_api_key');
-                UI.showToast('Settings cleared.', 'info');
-            }
+            const keyShodan = inputShodan.value.trim();
+            const keyHibp = inputHibp.value.trim();
+
+            if (keyShodan) localStorage.setItem('shodan_api_key', keyShodan);
+            else localStorage.removeItem('shodan_api_key');
+
+            if (keyHibp) localStorage.setItem('hibp_api_key', keyHibp);
+            else localStorage.removeItem('hibp_api_key');
+
+            UI.showToast('Settings saved successfully.', 'success');
             modal.classList.add('hidden');
         });
     }

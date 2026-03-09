@@ -288,17 +288,52 @@
                     <div class="view-header">
                         <div>
                             <h1 class="view-title">Data Breach & Leaks</h1>
-                            <p class="view-subtitle">Check if an email or domain was involved in known public data
-                                breaches.</p>
+                            <p class="view-subtitle">Check if an email, domain, or phone number was involved in known
+                                public data breaches.</p>
                         </div>
                     </div>
                     <div class="tool-container glass-panel">
-                        <div class="search-bar-large">
-                            <input type="text" id="leak-input" placeholder="Enter Email or Domain..." class="font-mono">
-                            <button id="btn-analyze-leak" class="btn-primary">
-                                <i class="ph ph-rocket-launch"></i> Check Leaks
-                            </button>
+                        <div class="alert alert-info mb-4"
+                            style="background: rgba(14, 165, 233, 0.1); border: 1px solid var(--accent-primary); padding: 1rem; border-radius: var(--radius-md); font-size: 0.875rem;">
+                            <i class="ph ph-info"
+                                style="color: var(--accent-primary); margin-right: 0.5rem; vertical-align: middle;"></i>
+                            <strong>Route A (API Scan):</strong> Checks Email via public API. Phone numbers (+62...)
+                            require an <a href="#" class="link-hibp-settings"
+                                style="text-decoration: underline; color: var(--accent-primary);">HIBP API Key in
+                                Settings</a>.<br>
+                            <strong>Route B (Dorks):</strong> Instantly tracks phone numbers across Telegram, Pastebin,
+                            and dark web indexes natively.
                         </div>
+                        <div class="search-bar-large">
+                            <input type="text" id="leak-input" placeholder="Enter Email, Domain, or Phone (+62...)"
+                                class="font-mono">
+                            <div class="button-group" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <button id="btn-analyze-leak" class="btn-primary" title="Live API Scan"
+                                    style="background: var(--accent-secondary);">
+                                    <i class="ph ph-rocket-launch"></i> API Scan
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quick Dorks Section for Phone Numbers -->
+                        <div class="quick-dorks"
+                            style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                            <div
+                                style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
+                                Phone Number OSINT Dorks (Route B)
+                            </div>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;" id="leak-dork-chips">
+                                <span class="dork-chip" data-dork='site:pastebin.com OR site:rentry.co'
+                                    title="Search for Phone in Paste Sites">📝 Paste Trawl</span>
+                                <span class="dork-chip" data-dork='site:t.me/* "phone" OR "nomor"'
+                                    title="Search for Phone in Telegram Logs">🚀 Telegram Leaks</span>
+                                <span class="dork-chip" data-dork='ext:txt OR ext:csv OR ext:json intext:"phone"'
+                                    title="Search for Phone in Exposed Databases">🗄️ Database Dumps</span>
+                                <span class="dork-chip" data-dork='inurl:breach OR inurl:leak'
+                                    title="Search for Phone in Breach Forums">☠️ Dark Web Indexes</span>
+                            </div>
+                        </div>
+
                         <div id="leak-results" class="results-area hidden mt-4">
                         </div>
                     </div>
@@ -542,6 +577,18 @@
                 <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;"><a
                         href="https://account.shodan.io/" target="_blank" style="color: var(--accent-primary);">Get a
                         free key here</a></div>
+            </div>
+
+            <div style="margin-bottom: 1.5rem;">
+                <label
+                    style="display: block; font-size: 0.875rem; color: var(--text-muted); margin-bottom: 0.5rem;">HIBP
+                    API Key (Phone OSINT)</label>
+                <input type="password" id="input-hibp-key" placeholder="Enter your HaveIBeenPwned key..."
+                    class="font-mono"
+                    style="width: 100%; background: var(--bg-base); border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 0.75rem; color: var(--text-main); outline: none;">
+                <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem;"><a
+                        href="https://haveibeenpwned.com/API/Key" target="_blank"
+                        style="color: var(--accent-primary);">Requires a paid key for Phone Lookup</a></div>
             </div>
 
             <div style="display: flex; justify-content: flex-end; gap: 1rem;">

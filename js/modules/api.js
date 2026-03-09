@@ -108,27 +108,68 @@ export const getPortScan = async (ipOrDomain) => {
 
 /**
  * Data Breach Check (Proxying HIBP / EmailRep or similar open APIs)
- * Note: Genuine HIBP requires a paid API key for direct email queries via CORS. 
- * As an alternative for MVP, we'll try a public breach API or simulate it if blocked.
- * We'll use X-posed-or-not API which is free without keys for basic lookups.
+ * Note: Genuine HIBP requires a paid API key for direct queries.
+ * If API key is provided, we try HIBP. If not, and it's an email, we fallback to XposedOrNot.
  */
-export const getLeakInfo = async (email) => {
-    try {
-        const response = await fetchWithTimeout(`https://api.xposedornot.com/v1/check-email/${email}`);
+export const getLeakInfo = async (target, hibpApiKey = null) => {
+    // Basic phone number detection (+ followed by 10-15 digits)
+    const isPhone = /^\+[1-9]\d{1,14}$/.test(target.replace(/\s|-/g, ''));
 
-        // Handle 404 (Not Found = No breaches) gracefully
-        if (response.Error === "Not found") {
-            return { status: "Safe", message: "No public breaches found for this email." };
+    if (isPhone && !hibpApiKey) {
+        throw new Error("A paid HIBP API Key is required to scan Phone Numbers natively. Please configure it in Settings or use the 'Route B' Dorks below.");
+    }
+
+    try {
+        if (hibpApiKey) {
+            // Use genuine HIBP API
+            const url = `https://haveibeenpwned.com/api/v3/breachedaccount/${encodeURIComponent(target.replace(/\s|-/g, ''))}?truncateResponse=false`;
+
+            // Note: In a real frontend environment, calling HIBP directly might fail due to strict CORS.
+            // A CORS proxy is often required. We'll attempt a direct call here, but acknowledge CORS limits.
+            const response = await fetch(url, {
+                headers: {
+                    'hibp-api-key': hibpApiKey,
+                    'user-agent': 'OSINT-Dashboard-App'
+                }
+            });
+
+            if (response.status === 404) {
+                return { status: "Safe", message: "No public breaches found on HIBP." };
+            }
+
+            if (!response.ok) {
+                if (response.status === 401) throw new Error("Invalid HIBP API Key.");
+                throw new Error(`HIBP Error: ${response.statusText}`);
+            }
+
+            const data = await response.json();
+            return {
+                status: 'Danger',
+                source: 'HaveIBeenPwned API',
+                breaches: data.map(b => ({
+                    Name: b.Name,
+                    Domain: b.Domain,
+                    DataClasses: b.DataClasses.join(', '),
+                    BreachDate: b.BreachDate
+                }))
+            };
+        } else {
+            // Fallback to XposedOrNot for Email only
+            const response = await fetchWithTimeout(`https://api.xposedornot.com/v1/check-email/${encodeURIComponent(target)}`);
+
+            // Handle 404 (Not Found = No breaches) gracefully
+            if (response.Error === "Not found") {
+                return { status: "Safe", message: "No public breaches found for this email." };
+            }
+            return response;
         }
 
-        return response;
     } catch (error) {
-        // Many security APIs return 404 naturally when safe
         if (error.message.includes("404")) {
-            return { status: "Safe", message: "No public breaches found for this email (404)." };
+            return { status: "Safe", message: "No public breaches found." };
         }
         console.error("Leak API Error:", error);
-        throw new Error("Unable to reach Breach Database API. " + error.message);
+        throw new Error(error.message || "Unable to reach Breach Database API.");
     }
 }
 
