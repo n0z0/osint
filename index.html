@@ -65,6 +65,12 @@
                             <span>Google Dorking</span>
                         </a>
                     </li>
+                    <li class="nav-item" data-tab="the-harvester">
+                        <a href="#" class="nav-link">
+                            <i class="ph ph-tractor"></i>
+                            <span>theHarvester</span>
+                        </a>
+                    </li>
                     <li class="nav-item" data-tab="leak-check">
                         <a href="#" class="nav-link">
                             <i class="ph ph-warning"></i>
@@ -559,6 +565,113 @@
                         </div>
                         <div id="cve-results" class="results-area hidden mt-4">
                         </div>
+                    </div>
+                </section>
+
+                </section>
+
+                <!-- theHarvester Command Builder View -->
+                <section id="the-harvester" class="view-panel">
+                    <div class="view-header">
+                        <div>
+                            <h1 class="view-title">theHarvester Command Builder</h1>
+                            <p class="view-subtitle">Generate optimized terminal commands for theHarvester OSINT
+                                framework to gather emails, subdomains, and host data.</p>
+                        </div>
+                    </div>
+                    <div class="tool-container glass-panel">
+                        <div class="alert alert-info mb-4"
+                            style="background: rgba(14, 165, 233, 0.1); border: 1px solid var(--accent-primary); padding: 1rem; border-radius: var(--radius-md); font-size: 0.875rem;">
+                            <i class="ph ph-terminal-window"
+                                style="color: var(--accent-primary); margin-right: 0.5rem; vertical-align: middle;"></i>
+                            <strong>Tool execution is offline.</strong> Generate the command here, then copy-paste it
+                            into your local terminal where theHarvester is installed.
+                        </div>
+
+                        <!-- Target Input -->
+                        <div class="search-bar-large" style="margin-bottom: 1rem;">
+                            <div class="input-prefix">Domain:</div>
+                            <input type="text" id="harvester-domain" placeholder="example.com" class="font-mono">
+                        </div>
+
+                        <!-- Options Form -->
+                        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+                            <!-- Top Limits -->
+                            <div
+                                style="background: var(--bg-modifier); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                                <label
+                                    style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Result
+                                    Limit (Length):</label>
+                                <input type="number" id="harvester-limit" value="500" min="50" max="5000" step="50"
+                                    class="font-mono"
+                                    style="width: 100%; background: var(--bg-base); border: 1px solid var(--border-color); color: var(--text-main); padding: 0.5rem; border-radius: var(--radius-sm);">
+                            </div>
+
+                            <!-- Sources Checkboxes -->
+                            <div
+                                style="background: var(--bg-modifier); padding: 1rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+                                <label
+                                    style="display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">Data
+                                    Sources to Query:</label>
+                                <div style="display: flex; gap: 1rem; flex-wrap: wrap;" id="harvester-sources">
+                                    <label
+                                        style="cursor: pointer; display: flex; align-items: center; gap: 0.25rem;"><input
+                                            type="checkbox" value="baidu" checked> Baidu</label>
+                                    <label
+                                        style="cursor: pointer; display: flex; align-items: center; gap: 0.25rem;"><input
+                                            type="checkbox" value="bing" checked> Bing</label>
+                                    <label
+                                        style="cursor: pointer; display: flex; align-items: center; gap: 0.25rem;"><input
+                                            type="checkbox" value="crtsh" checked> crt.sh</label>
+                                    <label
+                                        style="cursor: pointer; display: flex; align-items: center; gap: 0.25rem;"><input
+                                            type="checkbox" value="duckduckgo" checked> DuckDuckGo</label>
+                                    <label
+                                        style="cursor: pointer; display: flex; align-items: center; gap: 0.25rem;"><input
+                                            type="checkbox" value="google" checked> Google</label>
+                                    <label
+                                        style="cursor: pointer; display: flex; align-items: center; gap: 0.25rem;"><input
+                                            type="checkbox" value="yahoo" checked> Yahoo</label>
+                                    <label
+                                        style="cursor: pointer; display: flex; align-items: center; gap: 0.25rem;"><input
+                                            type="checkbox" value="github-code"> GitHub</label>
+                                    <label
+                                        style="cursor: pointer; display: flex; align-items: center; gap: 0.25rem;"><input
+                                            type="checkbox" value="linkedin"> LinkedIn</label>
+                                </div>
+                                <div style="margin-top: 0.75rem;">
+                                    <button id="btn-check-all"
+                                        style="background:none; border:none; color: var(--accent-primary); font-size: 0.75rem; cursor: pointer;">[Select
+                                        All]</button>
+                                    <button id="btn-uncheck-all"
+                                        style="background:none; border:none; color: var(--text-muted); font-size: 0.75rem; cursor: pointer;">[Clear
+                                        All]</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Generator Action -->
+                        <div style="text-align: right; margin-bottom: 1rem;">
+                            <button id="btn-generate-harvester" class="btn-primary"
+                                style="padding: 0.75rem 2rem; font-size: 1rem;">
+                                <i class="ph ph-magic-wand"></i> Generate Command
+                            </button>
+                        </div>
+
+                        <!-- Output Area -->
+                        <div id="harvester-output-area" class="hidden"
+                            style="background: #0f172a; border: 1px solid var(--border-color); border-radius: var(--radius-md); padding: 1rem; position: relative;">
+                            <div
+                                style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
+                                Generated Terminal Command</div>
+                            <pre id="harvester-cmd-text" class="font-mono"
+                                style="color: #10b981; margin: 0; white-space: pre-wrap; word-break: break-all; font-size: 0.9rem; padding-right: 3rem;"></pre>
+                            <button id="btn-copy-harvester" title="Copy to Clipboard"
+                                style="position: absolute; right: 1rem; top: 1.5rem; background: rgba(255,255,255,0.1); border: none; color: white; border-radius: 4px; padding: 0.5rem; cursor: pointer;">
+                                <i class="ph ph-copy"></i>
+                            </button>
+                        </div>
+
                     </div>
                 </section>
 

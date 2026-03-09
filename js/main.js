@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initCVETool();
     initShodanTool();
     initGoogleDorkingTool();
+    initHarvesterTool();
     initSettings();
 });
 
@@ -589,6 +590,100 @@ function initShodanTool() {
     btnScan.addEventListener('click', performAnalysis);
     input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') performAnalysis(); // Default enter to API scan
+    });
+}
+
+/**
+ * Initialize theHarvester Command Builder
+ */
+function initHarvesterTool() {
+    const btnGenerate = document.getElementById('btn-generate-harvester');
+    const btnCopy = document.getElementById('btn-copy-harvester');
+    const btnCheckAll = document.getElementById('btn-check-all');
+    const btnUncheckAll = document.getElementById('btn-uncheck-all');
+    const inputDomain = document.getElementById('harvester-domain');
+    const inputLimit = document.getElementById('harvester-limit');
+    const checkboxes = document.querySelectorAll('#harvester-sources input[type="checkbox"]');
+    const outputArea = document.getElementById('harvester-output-area');
+    const outputText = document.getElementById('harvester-cmd-text');
+
+    if (!btnGenerate || !inputDomain) return;
+
+    // Source Selection Helpers
+    if (btnCheckAll) {
+        btnCheckAll.addEventListener('click', (e) => {
+            e.preventDefault();
+            checkboxes.forEach(cb => cb.checked = true);
+        });
+    }
+
+    if (btnUncheckAll) {
+        btnUncheckAll.addEventListener('click', (e) => {
+            e.preventDefault();
+            checkboxes.forEach(cb => cb.checked = false);
+        });
+    }
+
+    // Command Generation
+    const generateCommand = () => {
+        const domain = inputDomain.value.trim();
+        if (!domain) {
+            UI.showToast('Please enter a target domain.', 'error');
+            return;
+        }
+
+        const limit = inputLimit.value || 500;
+
+        // Collect checked sources
+        const selectedSources = Array.from(checkboxes)
+            .filter(cb => cb.checked)
+            .map(cb => cb.value);
+
+        if (selectedSources.length === 0) {
+            UI.showToast('Please select at least one data source.', 'error');
+            return;
+        }
+
+        const sourcesStr = selectedSources.join(',');
+
+        // Construct the Command
+        const cmd = `theHarvester -d ${domain} -l ${limit} -b ${sourcesStr}`;
+
+        // Display Output
+        outputText.textContent = cmd;
+        outputArea.classList.remove('hidden');
+
+        UI.showToast('Command generated! Copy and run in your terminal.', 'success');
+        State.addQuery(domain, 'theHarvester Builder', 'Complete');
+    };
+
+    // Copy to Clipboard
+    if (btnCopy) {
+        btnCopy.addEventListener('click', async () => {
+            const textToCopy = outputText.textContent;
+            if (!textToCopy) return;
+
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                UI.showToast('Command copied to clipboard!', 'success');
+
+                // Visual feedback on button
+                const icon = btnCopy.querySelector('i');
+                icon.className = 'ph ph-check';
+                btnCopy.style.color = '#10b981';
+                setTimeout(() => {
+                    icon.className = 'ph ph-copy';
+                    btnCopy.style.color = 'white';
+                }, 2000);
+            } catch (err) {
+                UI.showToast('Failed to copy. Please select and copy manually.', 'warning');
+            }
+        });
+    }
+
+    btnGenerate.addEventListener('click', generateCommand);
+    inputDomain.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') generateCommand();
     });
 }
 
