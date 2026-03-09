@@ -59,6 +59,12 @@
                             <span>Identity Profiling</span>
                         </a>
                     </li>
+                    <li class="nav-item" data-tab="google-dorking">
+                        <a href="#" class="nav-link">
+                            <i class="ph ph-google-logo"></i>
+                            <span>Google Dorking</span>
+                        </a>
+                    </li>
                     <li class="nav-item" data-tab="leak-check">
                         <a href="#" class="nav-link">
                             <i class="ph ph-warning"></i>
@@ -406,6 +412,82 @@
                         </div>
 
                         <div id="shodan-results" class="results-area hidden mt-4">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Google Dorking View -->
+                <section id="google-dorking" class="view-panel">
+                    <div class="view-header">
+                        <div>
+                            <h1 class="view-title">Google Dorking (GHDB)</h1>
+                            <p class="view-subtitle">Uncover hidden files, exposed directories, and sensitive
+                                information using advanced Google search operators.</p>
+                        </div>
+                    </div>
+                    <div class="tool-container glass-panel">
+                        <div class="alert alert-info mb-4"
+                            style="background: rgba(234, 67, 53, 0.1); border: 1px solid rgba(234, 67, 53, 0.5); padding: 1rem; border-radius: var(--radius-md); font-size: 0.875rem;">
+                            <i class="ph ph-info"
+                                style="color: var(--accent-primary); margin-right: 0.5rem; vertical-align: middle;"></i>
+                            Enter a target domain (e.g., example.com) and click a Dork Template to automatically search
+                            Google for exposed assets related to that domain.
+                        </div>
+
+                        <div class="search-bar-large">
+                            <div class="input-prefix">site:</div>
+                            <input type="text" id="dork-domain-input" placeholder="example.com" class="font-mono">
+                            <button id="btn-custom-dork" class="btn-primary" title="Search with Custom Syntax">
+                                <i class="ph ph-magnifying-glass"></i> Search
+                            </button>
+                        </div>
+
+                        <!-- Curated Google Dorks -->
+                        <div class="quick-dorks"
+                            style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+
+                            <!-- Directory Traversal & Files -->
+                            <div
+                                style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
+                                Exposed Directories & Documents</div>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;"
+                                id="dork-container-files">
+                                <span class="dork-chip" data-dork='intitle:"index of"'>🗂️ Directory Listings</span>
+                                <span class="dork-chip"
+                                    data-dork='ext:pdf OR ext:doc OR ext:docx OR ext:xls OR ext:xlsx'>📄 Public
+                                    Documents</span>
+                                <span class="dork-chip" data-dork='ext:log OR ext:txt'>📝 Log Files</span>
+                                <span class="dork-chip" data-dork='inurl:admin OR inurl:login'>🚪 Login Panels</span>
+                            </div>
+
+                            <!-- Sensitive Data & Databases -->
+                            <div
+                                style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
+                                Credentials & Databases</div>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem;"
+                                id="dork-container-creds">
+                                <span class="dork-chip" data-dork='ext:env OR ext:sql'>🛢️ .env / SQL Dumps</span>
+                                <span class="dork-chip" data-dork='intext:"password" OR intext:"db_password" ext:txt'>🔑
+                                    Password Plaintext</span>
+                                <span class="dork-chip" data-dork='inurl:"phpmyadmin"'>🐘 phpMyAdmin</span>
+                                <span class="dork-chip" data-dork='ext:json OR ext:xml'>🧩 Data Endpoints</span>
+                            </div>
+
+                            <!-- Configs & Code -->
+                            <div
+                                style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase;">
+                                Infrastructure & Configuration</div>
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;" id="dork-container-infra">
+                                <span class="dork-chip" data-dork='inurl:wp-content OR inurl:wp-includes'>📝 WordPress
+                                    Paths</span>
+                                <span class="dork-chip" data-dork='inurl:git OR inurl:svn'>📂 Git/SVN Repos</span>
+                                <span class="dork-chip" data-dork='ext:yml OR ext:yaml OR ext:conf OR ext:cnf'>⚙️ Config
+                                    Files</span>
+                                <span class="dork-chip"
+                                    data-dork='intitle:"Traefik" OR intitle:"Kibana" OR intitle:"Grafana"'>📊 Exposed
+                                    Dashboards</span>
+                            </div>
+
                         </div>
                     </div>
                 </section>
