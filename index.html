@@ -68,7 +68,7 @@
                     <li class="nav-item" data-tab="shodan-intel">
                         <a href="#" class="nav-link">
                             <i class="ph ph-globe-hemisphere-east"></i>
-                            <span>Shodan Intel</span>
+                            <span>IoT Search Engines</span>
                         </a>
                     </li>
                     <li class="nav-item" data-tab="cve-lookup">
@@ -302,9 +302,9 @@
                 <section id="shodan-intel" class="view-panel">
                     <div class="view-header">
                         <div>
-                            <h1 class="view-title">Shodan Intelligence</h1>
-                            <p class="view-subtitle">Search for exposed devices, open ports, and vulnerabilities using
-                                Shodan Dorks or API.</p>
+                            <h1 class="view-title">IoT Search Engines</h1>
+                            <p class="view-subtitle">Search devices globally using Dorks (Shodan, Censys, ZoomEye) or
+                                via Shodan API.</p>
                         </div>
                     </div>
                     <div class="tool-container glass-panel">
@@ -312,8 +312,8 @@
                             style="background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent-secondary); padding: 1rem; border-radius: var(--radius-md); font-size: 0.875rem;">
                             <i class="ph ph-info"
                                 style="color: var(--accent-secondary); margin-right: 0.5rem; vertical-align: middle;"></i>
-                            <strong>Route A (Free):</strong> Click "Generate Dorks" to open specialized Shodan search
-                            queries in a new tab.<br>
+                            <strong>Route A (Dorks):</strong> Instantly generate search queries across top engines
+                            without an API key.<br>
                             <strong>Route B (API):</strong> Configure your Shodan API Key in <a href="#"
                                 id="link-shodan-settings"
                                 style="text-decoration: underline; color: var(--accent-primary);">Settings</a> to fetch
@@ -321,15 +321,90 @@
                         </div>
                         <div class="search-bar-large">
                             <input type="text" id="shodan-input"
-                                placeholder="Target IP or Domain (e.g. 8.8.8.8, apache)" class="font-mono">
-                            <button id="btn-shodan-dork" class="btn-primary"
-                                style="background: var(--bg-surface-hover); border: 1px solid var(--border-color); color: var(--text-main);">
-                                <i class="ph ph-magnifying-glass-plus"></i> Gen Dorks
-                            </button>
-                            <button id="btn-analyze-shodan" class="btn-primary">
-                                <i class="ph ph-rocket-launch"></i> API Scan
-                            </button>
+                                placeholder="Target IP or Keyword (e.g. 8.8.8.8, apache)" class="font-mono">
+                            <div class="button-group"
+                                style="display: flex; gap: 0.5rem; margin-top: 1rem; flex-wrap: wrap;">
+                                <button id="btn-shodan-dork" class="btn-primary"
+                                    style="background: var(--bg-surface-hover); border: 1px solid var(--border-color); color: var(--text-main);"
+                                    title="Open in Shodan">
+                                    <i class="ph ph-magnifying-glass-plus"></i> Shodan
+                                </button>
+                                <button id="btn-censys-dork" class="btn-primary"
+                                    style="background: var(--bg-surface-hover); border: 1px solid var(--border-color); color: var(--text-main);"
+                                    title="Open in Censys">
+                                    <i class="ph ph-magnifying-glass-plus"></i> Censys
+                                </button>
+                                <button id="btn-zoomeye-dork" class="btn-primary"
+                                    style="background: var(--bg-surface-hover); border: 1px solid var(--border-color); color: var(--text-main);"
+                                    title="Open in ZoomEye">
+                                    <i class="ph ph-magnifying-glass-plus"></i> ZoomEye
+                                </button>
+                                <div style="width: 1px; background: var(--border-color); margin: 0 0.5rem;"></div>
+                                <button id="btn-analyze-shodan" class="btn-primary" title="Live Shodan API Scan"
+                                    style="background: var(--accent-secondary);">
+                                    <i class="ph ph-rocket-launch"></i> API Scan
+                                </button>
+                            </div>
                         </div>
+
+                        <!-- Quick Dorks Section -->
+                        <div class="quick-dorks"
+                            style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                            <div
+                                style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 0.05em;">
+                                Curated OSINT Dorks (Click to apply)</div>
+
+                            <!-- By Services / Vulnerabilities -->
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
+                                <span class="dork-chip" data-dork='port:21 "Anonymous user logged in"'
+                                    title="Shodan: Open FTP Servers">🔓 Anonymous FTP</span>
+                                <span class="dork-chip" data-dork='port:3389 has_screenshot:true'
+                                    title="Shodan: RDP with Exposed Screens">🖥️ Exposed RDP</span>
+                                <span class="dork-chip" data-dork='vuln:"CVE-2021-44228"'
+                                    title="Shodan/Censys: Log4Shell Vulnerability">🐛 Log4Shell (CVE-2021-44228)</span>
+                                <span class="dork-chip" data-dork='vuln:"CVE-2017-0144"'
+                                    title="Shodan: EternalBlue (MS17-010)">🛡️ EternalBlue</span>
+                                <span class="dork-chip" data-dork='os:"Windows Server"'
+                                    title="Shodan/Zoomeye: Windows Servers">🪟 Windows Servers</span>
+                                <span class="dork-chip" data-dork='product:"Apache httpd" port:"80"'
+                                    title="Shodan: Apache HTTP Servers">🌐 Apache HTTP</span>
+                                <span class="dork-chip" data-dork='services.software.vendor:"nginx"'
+                                    title="Censys: Nginx Servers">🟢 Nginx (Censys)</span>
+                            </div>
+
+                            <!-- By Location / Network -->
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
+                                <span class="dork-chip" data-dork='country:"ID"'
+                                    title="Shodan/Zoomeye: Servers in Indonesia">🇮🇩 Country: ID</span>
+                                <span class="dork-chip" data-dork='city:"Jakarta" port:"22"'
+                                    title="Shodan: Open SSH in Jakarta">🏙️ City: Jakarta (SSH)</span>
+                                <span class="dork-chip" data-dork='org:"Telkom Indonesia"'
+                                    title="Shodan: Devices inside Telkom Org">🏢 Org: Telkom</span>
+                                <span class="dork-chip" data-dork='asn:"AS7713"'
+                                    title="Shodan/Censys: Search by ASN (e.g., TelkomNet)">🌐 ASN: AS7713</span>
+                                <span class="dork-chip" data-dork='net:"192.168.1.0/24"'
+                                    title="Shodan: Search specific Subnet">🖧 Net: /24 Subnet</span>
+                            </div>
+
+                            <!-- Industrial / IoT Devices -->
+                            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                                <span class="dork-chip" data-dork='title:"IP Camera" "Server: Webs"'
+                                    title="Shodan: Generic IP CCTV Cameras">� IP CCTV</span>
+                                <span class="dork-chip" data-dork='"Hikvision" port:"80,8000"'
+                                    title="Shodan/Zoomeye: Hikvision Cameras & DVRs">� Hikvision CCTV</span>
+                                <span class="dork-chip" data-dork='"Dahua" port:"37777"'
+                                    title="Zoomeye: Dahua IPC/DVR">📹 Dahua CCTV</span>
+                                <span class="dork-chip" data-dork='app:"webcamXP"'
+                                    title="ZoomEye/Shodan: Public Webcams">🎥 User Webcams</span>
+                                <span class="dork-chip" data-dork='port:"554" has_screenshot:true'
+                                    title="Shodan: Open RTSP Feeds">� Open RTSP Feeds</span>
+                                <span class="dork-chip" data-dork='port:"1883" MQTT'
+                                    title="Shodan: Exposed IoT MQTT Brokers">📡 IoT (MQTT)</span>
+                                <span class="dork-chip" data-dork='port:"502" Modbus'
+                                    title="Shodan: SCADA/Industrial Control Systems">🏭 SCADA (Modbus)</span>
+                            </div>
+                        </div>
+
                         <div id="shodan-results" class="results-area hidden mt-4">
                         </div>
                     </div>

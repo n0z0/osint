@@ -286,34 +286,81 @@ function initCVETool() {
 }
 
 /**
- * Initialize Shodan Intelligence Tool
+ * Initialize IoT Search Engines Tool (Shodan, Censys, ZoomEye)
  */
 function initShodanTool() {
-    const btnDork = document.getElementById('btn-shodan-dork');
+    const btnShodanDork = document.getElementById('btn-shodan-dork');
+    const btnCensysDork = document.getElementById('btn-censys-dork');
+    const btnZoomEyeDork = document.getElementById('btn-zoomeye-dork');
     const btnScan = document.getElementById('btn-analyze-shodan');
     const input = document.getElementById('shodan-input');
 
-    if (!btnDork || !btnScan || !input) return;
+    if (!btnShodanDork || !btnScan || !input) return;
 
-    // Route A: Dork Generator
-    btnDork.addEventListener('click', () => {
+    // Helper to determine if input is a specific Dork command or plain target
+    const isIPTarget = (val) => /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(val);
+    const isRawDork = (val) => val.includes(':') || val.includes('"') || val.includes(' ');
+
+    // Handle Quick Dork Clicks
+    const dorkChips = document.querySelectorAll('.dork-chip');
+    dorkChips.forEach(chip => {
+        chip.addEventListener('click', () => {
+            const dorkValue = chip.getAttribute('data-dork');
+            input.value = dorkValue;
+            UI.showToast('Dork template applied. Now click a search engine below.', 'info');
+        });
+    });
+
+    // Route A: Shodan Dork
+    btnShodanDork.addEventListener('click', () => {
         const target = input.value.trim();
-        if (!target) {
-            UI.showToast('Please enter a target IP, domain, or keyword.', 'error');
-            return;
+        if (!target) return UI.showToast('Please enter a target or dork.', 'error');
+
+        let dork = target;
+        if (!isRawDork(target)) {
+            dork = isIPTarget(target) ? `host:${target}` : `hostname:"${target}"`;
         }
 
-        // Determine if it's an IP/hostname or a keyword
-        const isIP = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(target);
-        let dork = isIP ? `host:${target}` : `hostname:"${target}"`;
-
-        const url = `https://www.shodan.io/search?query=${encodeURIComponent(dork)}`;
-        window.open(url, '_blank');
-        UI.showToast('Shodan opened in new tab.', 'info');
+        window.open(`https://www.shodan.io/search?query=${encodeURIComponent(dork)}`, '_blank');
+        UI.showToast('Opened in Shodan.', 'info');
         State.addQuery(target, 'Shodan Dork', 'Complete');
     });
 
-    // Route B: API Scan
+    // Route A: Censys Dork
+    if (btnCensysDork) {
+        btnCensysDork.addEventListener('click', () => {
+            const target = input.value.trim();
+            if (!target) return UI.showToast('Please enter a target or dork.', 'error');
+
+            let dork = target;
+            if (!isRawDork(target)) {
+                dork = isIPTarget(target) ? `ip:${target}` : `services.tls.certificates.leaf_data.subject.common_name:"${target}"`;
+            }
+
+            window.open(`https://search.censys.io/search?resource=hosts&q=${encodeURIComponent(dork)}`, '_blank');
+            UI.showToast('Opened in Censys.', 'info');
+            State.addQuery(target, 'Censys Dork', 'Complete');
+        });
+    }
+
+    // Route A: ZoomEye Dork
+    if (btnZoomEyeDork) {
+        btnZoomEyeDork.addEventListener('click', () => {
+            const target = input.value.trim();
+            if (!target) return UI.showToast('Please enter a target or dork.', 'error');
+
+            let dork = target;
+            if (!isRawDork(target)) {
+                dork = isIPTarget(target) ? `ip:"${target}"` : `site:"${target}"`;
+            }
+
+            window.open(`https://www.zoomeye.org/searchResult?q=${encodeURIComponent(dork)}`, '_blank');
+            UI.showToast('Opened in ZoomEye.', 'info');
+            State.addQuery(target, 'ZoomEye Dork', 'Complete');
+        });
+    }
+
+    // Route B: API Scan (Shodan Only)
     const performAnalysis = async () => {
         const ip = input.value.trim();
         if (!ip) {
