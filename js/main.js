@@ -78,10 +78,11 @@ function initGoogleDorkingTool() {
  * Initialize IP Intelligence Tool
  */
 function initIPTool() {
-    const btn = document.getElementById('btn-analyze-ip');
+    const btnAnalyze = document.getElementById('btn-analyze-ip');
+    const btnReverse = document.getElementById('btn-reverse-ip');
     const input = document.getElementById('ip-input');
 
-    if (!btn || !input) return;
+    if (!btnAnalyze || !input) return;
 
     const performAnalysis = async () => {
         const ip = input.value.trim();
@@ -106,7 +107,46 @@ function initIPTool() {
         }
     };
 
-    btn.addEventListener('click', performAnalysis);
+    const performReverseIp = async () => {
+        const ip = input.value.trim();
+        if (!ip) {
+            UI.showToast('Please enter an IP address.', 'error');
+            return;
+        }
+
+        UI.setLoadingState('btn-reverse-ip', true);
+        UI.clearContainer('ip-results');
+
+        try {
+            const domains = await API.getReverseIp(ip);
+            const resultsContainer = document.getElementById('ip-results');
+
+            if (domains.length === 0) {
+                resultsContainer.innerHTML = `<div class="alert alert-info" style="color: var(--text-main); padding: 1rem; text-align: center; border-radius: var(--radius-md); background: rgba(255,255,255,0.05); border: 1px solid var(--border-color);">No domains found pointing to this IP.</div>`;
+            } else {
+                let html = `<h3 style="margin-bottom: 1rem; color: var(--text-main); font-size: 1.1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">Domains Hosted on ${ip} (${domains.length})</h3>`;
+                html += `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem; max-height: 400px; overflow-y: auto; padding-right: 0.5rem;">`;
+                domains.forEach(d => {
+                    html += `<div style="background: var(--bg-modifier); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color); font-family: monospace; font-size: 0.85rem; color: var(--accent-primary);"><a href="http://${d}" target="_blank" style="color: inherit; text-decoration: none;"><i class="ph ph-link" style="margin-right: 0.25rem;"></i>${d}</a></div>`;
+                });
+                html += `</div>`;
+                resultsContainer.innerHTML = html;
+            }
+            resultsContainer.classList.remove('hidden');
+
+            UI.showToast(`Found ${domains.length} domains.`, 'success');
+            State.addQuery(ip, 'Reverse IP', 'Complete');
+        } catch (error) {
+            UI.showToast(`Lookup failed: ${error.message}`, 'error');
+            State.addQuery(ip, 'Reverse IP', 'Failed');
+        } finally {
+            UI.setLoadingState('btn-reverse-ip', false);
+        }
+    };
+
+    btnAnalyze.addEventListener('click', performAnalysis);
+    if (btnReverse) btnReverse.addEventListener('click', performReverseIp);
+
     input.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') performAnalysis();
     });

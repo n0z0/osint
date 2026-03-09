@@ -37,6 +37,35 @@ export const getIpIntel = async (ip) => {
 };
 
 /**
+ * Fetch Reverse IP Lookup (Using HackerTarget Free API)
+ * Note: Returns plain text domains separated by newlines. Rate limited.
+ */
+export const getReverseIp = async (ip) => {
+    try {
+        const controller = new AbortController();
+        const id = setTimeout(() => controller.abort(), 10000);
+
+        const response = await fetch(`https://api.hackertarget.com/reverseiplookup/?q=${ip}`, { signal: controller.signal });
+        clearTimeout(id);
+
+        if (!response.ok) throw new Error("Reverse IP request failed.");
+        const data = await response.text();
+
+        if (data.includes('API count exceeded')) {
+            throw new Error("HackerTarget API limit exceeded. Try again later.");
+        }
+        if (data.includes('error') || data.includes('No DNS A records')) {
+            return [];
+        }
+
+        return data.split('\n').map(d => d.trim()).filter(d => d !== '');
+    } catch (error) {
+        console.error("Reverse IP Error:", error);
+        throw new Error("Failed to fetch Reverse IP data: " + error.message);
+    }
+};
+
+/**
  * Fetch Domain WHOIS/Information (Mocked/Free API)
  * Note: Free reliable WHOIS APIs are rate-limited. Using networkcalc for basic DNS/WHOIS info.
  */
