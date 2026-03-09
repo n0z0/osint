@@ -105,3 +105,58 @@ export const getPortScan = async (ipOrDomain) => {
         return "Failed to initiate remote scan.";
     }
 }
+
+/**
+ * Data Breach Check (Proxying HIBP / EmailRep or similar open APIs)
+ * Note: Genuine HIBP requires a paid API key for direct email queries via CORS. 
+ * As an alternative for MVP, we'll try a public breach API or simulate it if blocked.
+ * We'll use X-posed-or-not API which is free without keys for basic lookups.
+ */
+export const getLeakInfo = async (email) => {
+    try {
+        const response = await fetchWithTimeout(`https://api.xposedornot.com/v1/check-email/${email}`);
+
+        // Handle 404 (Not Found = No breaches) gracefully
+        if (response.Error === "Not found") {
+            return { status: "Safe", message: "No public breaches found for this email." };
+        }
+
+        return response;
+    } catch (error) {
+        // Many security APIs return 404 naturally when safe
+        if (error.message.includes("404")) {
+            return { status: "Safe", message: "No public breaches found for this email (404)." };
+        }
+        console.error("Leak API Error:", error);
+        throw new Error("Unable to reach Breach Database API. " + error.message);
+    }
+}
+
+/**
+ * CVE Vulnerability Lookup (Using NVD / MITRE public APIs)
+ */
+export const getCVEInfo = async (cveId) => {
+    try {
+        // cve.circl.lu is a public reliable alternative to direct NVD which often limits without keys
+        const response = await fetchWithTimeout(`https://cve.circl.lu/api/cve/CVE-${cveId}`);
+        // Circl returns null if not found
+        if (!response) {
+            throw new Error(`CVE-${cveId} not found in database.`);
+        }
+
+        // We trim the massive response for UI friendliness
+        return {
+            id: response.id,
+            cvss: response.cvss,
+            severity: (response.cvss >= 9.0) ? 'CRITICAL' : (response.cvss >= 7.0) ? 'HIGH' : (response.cvss >= 4.0) ? 'MEDIUM' : 'LOW',
+            summary: response.summary,
+            published: response.Published,
+            modified: response.Modified,
+            references: (response.references || []).slice(0, 5).join(', ') // Just show 5
+        };
+
+    } catch (error) {
+        console.error("CVE API Error:", error);
+        throw new Error(`Failed to lookup CVE-${cveId}: ` + error.message);
+    }
+}

@@ -24,7 +24,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initDomainTool();
     initReconTool();
     initUsernameTool();
-
+    initLeakTool();
+    initCVETool();
 });
 
 /**
@@ -186,6 +187,93 @@ function initUsernameTool() {
             State.addQuery(`@${username}`, 'Identity Profiling', 'Failed');
         } finally {
             UI.setLoadingState('btn-analyze-username', false);
+        }
+    };
+
+    btn.addEventListener('click', performAnalysis);
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') performAnalysis();
+    });
+}
+
+/**
+ * Initialize Data Breach / Leak Tool
+ */
+function initLeakTool() {
+    const btn = document.getElementById('btn-analyze-leak');
+    const input = document.getElementById('leak-input');
+
+    if (!btn || !input) return;
+
+    const performAnalysis = async () => {
+        const target = input.value.trim();
+        if (!target) {
+            UI.showToast('Please enter an email.', 'error');
+            return;
+        }
+
+        UI.setLoadingState('btn-analyze-leak', true);
+        UI.clearContainer('leak-results');
+
+        try {
+            const data = await API.getLeakInfo(target);
+            UI.renderDataGrid('leak-results', data);
+
+            if (data.status === "Safe") {
+                UI.showToast('Target is safe from known leaks.', 'success');
+                State.addQuery(target, 'Leak Check', 'Complete', false);
+            } else {
+                UI.showToast('WARNING: Data Breach exposure detected.', 'error');
+                State.addQuery(target, 'Leak Check', 'Complete', true); // Record as threat
+            }
+
+        } catch (error) {
+            UI.showToast(`Check failed: ${error.message}`, 'error');
+            State.addQuery(target, 'Leak Check', 'Failed');
+        } finally {
+            UI.setLoadingState('btn-analyze-leak', false);
+        }
+    };
+
+    btn.addEventListener('click', performAnalysis);
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') performAnalysis();
+    });
+}
+
+/**
+ * Initialize CVE Lookup Tool
+ */
+function initCVETool() {
+    const btn = document.getElementById('btn-analyze-cve');
+    const input = document.getElementById('cve-input');
+
+    if (!btn || !input) return;
+
+    const performAnalysis = async () => {
+        const cveId = input.value.trim();
+        if (!cveId) {
+            UI.showToast('Please enter a CVE year and ID.', 'error');
+            return;
+        }
+
+        UI.setLoadingState('btn-analyze-cve', true);
+        UI.clearContainer('cve-results');
+
+        try {
+            const data = await API.getCVEInfo(cveId);
+            UI.renderDataGrid('cve-results', data);
+            UI.showToast(`CVE-${cveId} resolved.`, 'success');
+
+            // Mark as threat if CVSS is High or Critical
+            const isCritical = data.cvss >= 7.0;
+            State.addQuery(`CVE-${cveId}`, 'Vulnerability Lookup', 'Complete', isCritical);
+
+        } catch (error) {
+            UI.showToast(`Lookup failed: ${error.message}`, 'error');
+            State.addQuery(`CVE-${cveId}`, 'Vulnerability Lookup', 'Failed');
+        } finally {
+            UI.setLoadingState('btn-analyze-cve', false);
         }
     };
 

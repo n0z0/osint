@@ -59,6 +59,18 @@
                             <span>Identity Profiling</span>
                         </a>
                     </li>
+                    <li class="nav-item" data-tab="leak-check">
+                        <a href="#" class="nav-link">
+                            <i class="ph ph-warning"></i>
+                            <span>Breach / Leaks</span>
+                        </a>
+                    </li>
+                    <li class="nav-item" data-tab="cve-lookup">
+                        <a href="#" class="nav-link">
+                            <i class="ph ph-bug"></i>
+                            <span>CVE Lookup</span>
+                        </a>
+                    </li>
                 </ul>
             </nav>
 
@@ -252,6 +264,55 @@
                         </div>
 
                         <div id="username-results" class="results-area hidden mt-4">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Breach / Leaks View -->
+                <section id="leak-check" class="view-panel">
+                    <div class="view-header">
+                        <div>
+                            <h1 class="view-title">Data Breach & Leaks</h1>
+                            <p class="view-subtitle">Check if an email or domain was involved in known public data
+                                breaches.</p>
+                        </div>
+                    </div>
+                    <div class="tool-container glass-panel">
+                        <div class="search-bar-large">
+                            <input type="text" id="leak-input" placeholder="Enter Email or Domain..." class="font-mono">
+                            <button id="btn-analyze-leak" class="btn-primary">
+                                <i class="ph ph-rocket-launch"></i> Check Leaks
+                            </button>
+                        </div>
+                        <div id="leak-results" class="results-area hidden mt-4">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- CVE Lookup View -->
+                <section id="cve-lookup" class="view-panel">
+                    <div class="view-header">
+                        <div>
+                            <h1 class="view-title">Vulnerability (CVE) Intelligence</h1>
+                            <p class="view-subtitle">Retrieve details for a specific CVE ID (e.g., CVE-2021-44228).</p>
+                        </div>
+                    </div>
+                    <div class="tool-container glass-panel">
+                        <div class="alert alert-info mb-4"
+                            style="background: rgba(14, 165, 233, 0.1); border: 1px solid var(--accent-primary); padding: 1rem; border-radius: var(--radius-md); font-size: 0.875rem;">
+                            <i class="ph ph-info"
+                                style="color: var(--accent-primary); margin-right: 0.5rem; vertical-align: middle;"></i>
+                            Enter a full CVE ID format to view its CVSS score, severity, and description directly from
+                            the NVD database.
+                        </div>
+                        <div class="search-bar-large">
+                            <div class="input-prefix">CVE-</div>
+                            <input type="text" id="cve-input" placeholder="YYYY-XXXXX" class="font-mono">
+                            <button id="btn-analyze-cve" class="btn-primary">
+                                <i class="ph ph-rocket-launch"></i> Lookup CVE
+                            </button>
+                        </div>
+                        <div id="cve-results" class="results-area hidden mt-4">
                         </div>
                     </div>
                 </section>
