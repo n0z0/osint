@@ -181,9 +181,8 @@ export const getCVEInfo = async (cveId) => {
         // cve.circl.lu is a public reliable alternative to direct NVD which often limits without keys
         // Since their server sends a conflicting CORS header sometimes, we route through a proxy
         const targetUrl = encodeURIComponent(`https://cve.circl.lu/api/cve/CVE-${cveId}`);
-        const responseProxy = await fetchWithTimeout(`https://api.allorigins.win/get?url=${targetUrl}`);
+        const proxyData = await fetchWithTimeout(`https://api.allorigins.win/get?url=${targetUrl}`);
 
-        const proxyData = await responseProxy.json();
         const response = proxyData.contents ? JSON.parse(proxyData.contents) : null;
 
         // Circl returns null if not found
