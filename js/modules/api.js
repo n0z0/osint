@@ -179,7 +179,13 @@ export const getLeakInfo = async (target, hibpApiKey = null) => {
 export const getCVEInfo = async (cveId) => {
     try {
         // cve.circl.lu is a public reliable alternative to direct NVD which often limits without keys
-        const response = await fetchWithTimeout(`https://cve.circl.lu/api/cve/CVE-${cveId}`);
+        // Since their server sends a conflicting CORS header sometimes, we route through a proxy
+        const targetUrl = encodeURIComponent(`https://cve.circl.lu/api/cve/CVE-${cveId}`);
+        const responseProxy = await fetchWithTimeout(`https://api.allorigins.win/get?url=${targetUrl}`);
+
+        const proxyData = await responseProxy.json();
+        const response = proxyData.contents ? JSON.parse(proxyData.contents) : null;
+
         // Circl returns null if not found
         if (!response) {
             throw new Error(`CVE-${cveId} not found in database.`);
